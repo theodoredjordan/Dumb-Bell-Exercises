@@ -1,0 +1,531 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dumbbell Exercise Chart</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one narrow column, filter chips on top, exercises grouped by muscle with a data strip per row. */
+:root {
+  --bg: #eceeec;
+  --surface: #f7f8f7;
+  --fg: #1a201e;
+  --muted: #5d6764;
+  --line: #cfd5d2;
+  --accent: #a8481c;
+  --accent-ink: #ffffff;
+  --font-display: "Barlow Condensed", "Arial Narrow", Impact, sans-serif;
+  --font-body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121615;
+    --surface: #1a201f;
+    --fg: #e6eae8;
+    --muted: #93a09b;
+    --line: #2c3532;
+    --accent: #ec8a55;
+    --accent-ink: #1a1008;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121615;
+  --surface: #1a201f;
+  --fg: #e6eae8;
+  --muted: #93a09b;
+  --line: #2c3532;
+  --accent: #ec8a55;
+  --accent-ink: #1a1008;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-block: 32px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+header { display: flex; flex-direction: column; gap: 10px; }
+.kicker { font-family: var(--font-data); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(40px, 9vw, 64px); line-height: 0.95; margin: 0; text-transform: uppercase; letter-spacing: 0.01em; text-wrap: balance; }
+.lede { margin: 0; max-width: 60ch; color: var(--muted); }
+.rule { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--font-data); font-size: 13px; color: var(--muted); padding-top: 12px; border-top: 2px solid var(--fg); }
+.rule b { color: var(--fg); font-weight: 500; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: 500 14px/1 var(--font-body);
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 40px;
+}
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chip:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.group { display: flex; flex-direction: column; }
+.group-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--fg); }
+.group-head h2 { font-family: var(--font-display); font-weight: 700; font-size: 28px; line-height: 1; margin: 0; text-transform: uppercase; letter-spacing: 0.02em; }
+.group-head span { font-family: var(--font-data); font-size: 12px; color: var(--muted); text-align: right; }
+.row { display: grid; grid-template-columns: 210px minmax(0, 1fr) auto; gap: 6px 20px; padding: 16px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.fig { grid-column: 1; grid-row: 1 / span 2; position: relative; width: 100%; aspect-ratio: 3 / 2; background: var(--surface); border: 1px solid var(--line); min-width: 0; }
+.fig svg { display: block; width: 100%; height: 100%; }
+.fig .cap { position: absolute; left: 8px; bottom: 5px; right: 8px; font: 500 10px/1.2 var(--font-data); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.main { grid-column: 2; grid-row: 1; }
+.floorline { stroke: var(--line); stroke-width: 2; }
+.prop { stroke: var(--muted); stroke-width: 6; stroke-linecap: round; fill: none; }
+.prop.thin { stroke-width: 3; }
+.torso { stroke: var(--fg); stroke-width: 7; stroke-linecap: round; fill: none; }
+.limb { stroke: var(--fg); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+.limb.far, .torso.far { stroke: var(--muted); opacity: 0.55; }
+.head { fill: var(--surface); stroke: var(--fg); stroke-width: 3.5; }
+.db rect, .db circle.plate { fill: var(--accent); }
+.db circle.dot { fill: var(--surface); }
+.db.far-db { opacity: 0.55; }
+.toggle { margin-left: auto; }
+.name { font-weight: 500; font-size: 17px; line-height: 1.25; }
+.hits { font-family: var(--font-data); font-size: 12px; color: var(--accent); margin-top: 2px; }
+.cue { grid-column: 2; grid-row: 2; color: var(--muted); font-size: 15px; max-width: 58ch; }
+.data { grid-column: 3; grid-row: 1 / span 2; display: grid; grid-template-columns: auto auto; gap: 2px 16px; font-family: var(--font-data); font-size: 13px; font-variant-numeric: tabular-nums; text-align: left; }
+.data .pair { display: contents; }
+.data dt { color: var(--muted); }
+.data dd { margin: 0; color: var(--fg); font-weight: 500; text-align: right; }
+
+.split { display: flex; flex-direction: column; gap: 12px; }
+.split h2 { font-family: var(--font-display); font-weight: 700; font-size: 28px; line-height: 1; margin: 0; text-transform: uppercase; letter-spacing: 0.02em; padding-bottom: 8px; border-bottom: 2px solid var(--fg); }
+.days { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.day { background: var(--surface); border: 1px solid var(--line); padding: 14px 16px; min-width: 0; }
+.day h3 { margin: 0 0 8px; font-family: var(--font-data); font-size: 12px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.day ol { margin: 0; padding-left: 20px; font-size: 15px; }
+.day li { padding: 2px 0; }
+.note { margin: 0; font-size: 14px; color: var(--muted); max-width: 66ch; }
+
+@media (max-width: 560px) {
+  .row { grid-template-columns: minmax(0, 1fr); }
+  .fig, .main, .cue, .data { grid-column: 1; grid-row: auto; }
+  .fig { max-width: 300px; margin-bottom: 6px; }
+  .toggle { margin-left: 0; }
+  .data { display: flex; flex-wrap: wrap; gap: 2px 20px; }
+  .data .pair { display: flex; gap: 8px; }
+  .data dt, .data dd { text-align: left; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">Pair of dumbbells, one bench</div>
+    <h1>Dumbbell Exercise Chart</h1>
+    <p class="lede">Twenty-five exercises sorted by muscle group, each with a looping demo of the movement from start to finish, a set and rep range, rest time and the one form cue worth remembering.</p>
+    <div class="rule">
+      <span><b>Load</b> leave 1–2 reps in reserve</span>
+      <span><b>Progress</b> add reps, then weight</span>
+      <span><b>Tempo</b> 2 s down, 1 s up</span>
+    </div>
+  </header>
+
+  <div class="filters" id="filters" role="group" aria-label="Filter by muscle group"></div>
+  <div id="groups" aria-live="polite"></div>
+
+  <section class="split">
+    <h2>Three-day starter week</h2>
+    <div class="days">
+      <div class="day"><h3>Mon · Day A</h3><ol>
+        <li>Goblet Squat</li><li>Dumbbell Bench Press</li><li>One-Arm Dumbbell Row</li><li>Lateral Raise</li><li>Hammer Curl</li><li>Suitcase Carry</li></ol></div>
+      <div class="day"><h3>Wed · Day B</h3><ol>
+        <li>Romanian Deadlift</li><li>Seated Overhead Press</li><li>Chest-Supported Row</li><li>Reverse Lunge</li><li>Overhead Triceps Extension</li><li>Side Bend</li></ol></div>
+      <div class="day"><h3>Fri · Day C</h3><ol>
+        <li>Bulgarian Split Squat</li><li>Incline Dumbbell Press</li><li>Dumbbell Pullover</li><li>Hip Thrust</li><li>Biceps Curl</li><li>Russian Twist</li></ol></div>
+    </div>
+    <p class="note">Rest a day between sessions. Warm up with one light set of the first lift. If a rep range feels easy at the top, move up one dumbbell size next time.</p>
+  </section>
+</div>
+
+<script>
+var DATA = [
+  { g: "Chest", items: [
+    ["Dumbbell Bench Press", "Chest · triceps", "3 × 8–12", "90 s", "Pinch the shoulder blades together and keep elbows about 45° from your torso."],
+    ["Incline Dumbbell Press", "Upper chest · front delts", "3 × 8–12", "75 s", "Set the bench at 30°. Higher angles shift the work to the shoulders."],
+    ["Dumbbell Fly", "Chest", "3 × 10–15", "60 s", "Hold a slight bend in the elbows and stop when you feel a stretch, not a pinch."],
+    ["Floor Press", "Chest · triceps", "3 × 8–12", "75 s", "Lower until the upper arms touch the floor, pause, then press. Works without a bench."]
+  ]},
+  { g: "Back", items: [
+    ["One-Arm Dumbbell Row", "Lats · mid back", "3 × 8–12 / side", "75 s", "Pull the elbow toward your hip, not straight up. Keep your torso still."],
+    ["Chest-Supported Row", "Mid back · rear delts", "3 × 10–12", "75 s", "Lie face down on an incline bench so your lower back can't help."],
+    ["Dumbbell Pullover", "Lats · chest", "3 × 10–12", "60 s", "Hold one dumbbell with both hands and reach back only as far as your ribs stay down."],
+    ["Reverse Fly", "Rear delts · upper back", "3 × 12–15", "45 s", "Hinge at the hips, lead with the elbows and keep the weight light."],
+    ["Dumbbell Shrug", "Upper traps", "3 × 12–15", "45 s", "Lift straight up toward your ears with no rolling of the shoulders."]
+  ]},
+  { g: "Shoulders", items: [
+    ["Seated Overhead Press", "Shoulders · triceps", "3 × 8–10", "90 s", "Squeeze your glutes and keep ribs down so you don't arch under the load."],
+    ["Lateral Raise", "Side delts", "3 × 12–15", "45 s", "Raise to shoulder height, leading with the elbows. Lighter than you think."],
+    ["Arnold Press", "All three delt heads", "3 × 8–12", "75 s", "Rotate palms from facing you to facing forward as you press."]
+  ]},
+  { g: "Arms", items: [
+    ["Biceps Curl", "Biceps", "3 × 10–12", "60 s", "Pin your elbows to your sides and lower for a full two seconds."],
+    ["Hammer Curl", "Biceps · forearms", "3 × 10–12", "60 s", "Keep palms facing each other throughout."],
+    ["Overhead Triceps Extension", "Triceps", "3 × 10–12", "60 s", "Keep elbows pointing forward and lower the weight behind your head."],
+    ["Triceps Kickback", "Triceps", "3 × 12–15", "45 s", "Hinge forward, upper arm parallel to the floor, and straighten only at the elbow."]
+  ]},
+  { g: "Legs", items: [
+    ["Goblet Squat", "Quads · glutes", "3 × 10–12", "90 s", "Hold one dumbbell at your chest and sit between your heels with an upright torso."],
+    ["Romanian Deadlift", "Hamstrings · glutes", "3 × 8–10", "90 s", "Push hips back with soft knees. Stop when the dumbbells pass mid-shin."],
+    ["Reverse Lunge", "Quads · glutes", "3 × 8–10 / leg", "75 s", "Step back far enough that your front shin stays near vertical."],
+    ["Bulgarian Split Squat", "Quads · glutes", "3 × 8–10 / leg", "90 s", "Rear foot on the bench, front foot far enough forward that the heel stays flat."],
+    ["Hip Thrust", "Glutes", "3 × 10–12", "75 s", "Rest the dumbbell across your hips and finish with ribs down, not a back arch."],
+    ["Standing Calf Raise", "Calves", "3 × 15–20", "45 s", "Pause at the top and lower slowly below the step if you can."]
+  ]},
+  { g: "Core", items: [
+    ["Russian Twist", "Obliques", "3 × 20 total", "45 s", "Lean back until your torso is at about 45° and rotate from the ribs, not the arms."],
+    ["Side Bend", "Obliques", "3 × 12 / side", "45 s", "Hold one dumbbell and bend straight sideways. Don't lean forward."],
+    ["Suitcase Carry", "Core · grip", "3 × 30–40 s / side", "60 s", "Walk tall with one heavy dumbbell and keep your shoulders level."]
+  ]}
+];
+
+(function () {
+  var total = 0;
+  DATA.forEach(function (d) { total += d.items.length; });
+
+  var filters = document.getElementById("filters");
+  var groups = document.getElementById("groups");
+  var buttons = [];
+
+  function chip(label, value) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip";
+    b.textContent = label;
+    b.dataset.value = value;
+    b.setAttribute("aria-pressed", value === "All" ? "true" : "false");
+    b.addEventListener("click", function () { select(value); });
+    filters.appendChild(b);
+    buttons.push(b);
+  }
+  chip("All (" + total + ")", "All");
+  DATA.forEach(function (d) { chip(d.g, d.g); });
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text) n.textContent = text;
+    return n;
+  }
+
+  DATA.forEach(function (d) {
+    var sec = el("section", "group");
+    sec.dataset.group = d.g;
+    sec.style.marginBottom = "28px";
+    var head = el("div", "group-head");
+    head.appendChild(el("h2", "", d.g));
+    head.appendChild(el("span", "", d.items.length + " exercises"));
+    sec.appendChild(head);
+    d.items.forEach(function (it) {
+      var row = el("article", "row");
+      var fig = el("div", "fig");
+      fig.dataset.ex = it[0];
+      row.appendChild(fig);
+      var left = el("div", "main");
+      left.appendChild(el("div", "name", it[0]));
+      left.appendChild(el("div", "hits", it[1]));
+      row.appendChild(left);
+      var dl = document.createElement("dl");
+      dl.className = "data";
+      dl.style.margin = "0";
+      [["Sets × reps", it[2]], ["Rest", it[3]]].forEach(function (p) {
+        var pair = el("div", "pair");
+        pair.appendChild(el("dt", "", p[0]));
+        pair.appendChild(el("dd", "", p[1]));
+        dl.appendChild(pair);
+      });
+      row.appendChild(dl);
+      row.appendChild(el("div", "cue", it[4]));
+      sec.appendChild(row);
+    });
+    groups.appendChild(sec);
+  });
+
+  function select(value) {
+    buttons.forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.value === value ? "true" : "false");
+    });
+    Array.prototype.forEach.call(groups.children, function (s) {
+      s.hidden = !(value === "All" || s.dataset.group === value);
+    });
+  }
+})();
+</script>
+<script>
+(function () {
+  var NS = "http://www.w3.org/2000/svg";
+  var FL = 132, LT = 38, LU = 24, LF = 22, LTH = 32, LSH = 31, SW = 13, RAD = Math.PI / 180;
+
+  /* Two-bone IK: returns the joint (elbow/knee) and the reachable end point. */
+  function ik(p0, p1, l1, l2, dir) {
+    var dx = p1[0] - p0[0], dy = p1[1] - p0[1];
+    var d = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+    var dd = Math.min(l1 + l2 - 0.5, Math.max(Math.abs(l1 - l2) + 0.5, d));
+    var ux = dx / d, uy = dy / d;
+    var a = (l1 * l1 - l2 * l2 + dd * dd) / (2 * dd);
+    var h = Math.sqrt(Math.max(0, l1 * l1 - a * a));
+    return {
+      j: [p0[0] + ux * a - dir * h * uy, p0[1] + uy * a + dir * h * ux],
+      end: [p0[0] + ux * dd, p0[1] + uy * dd]
+    };
+  }
+  function lerp(a, b, u) { return a + (b - a) * u; }
+  function mix(A, B, u) {
+    var o = {}, k;
+    for (k in A) {
+      var x = A[k], y = B[k];
+      if (y === undefined) { o[k] = x; continue; }
+      o[k] = Array.isArray(x) ? [lerp(x[0], y[0], u), lerp(x[1], y[1], u)] : lerp(x, y, u);
+    }
+    for (k in B) if (!(k in o)) o[k] = B[k];
+    return o;
+  }
+  function pts(arr) { return arr.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" "); }
+  function se(tag, attrs, parent) {
+    var n = document.createElementNS(NS, tag);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function X(o) { o.b = Object.assign({}, o.a, o.b); return o; }
+
+  /* Poses: hip, t (torso angle, 180 = upright, -90 = lying with head to the left), hand, foot. */
+  var EX = {
+    "Dumbbell Bench Press": X({ props: [["bench", 60, 176, 100]],
+      a: { hip: [150, 92], t: -90, hand: [114, 50], foot: [188, 132] }, b: { hand: [118, 76] } }),
+    "Incline Dumbbell Press": X({ props: [["line", 152, 104, 172, 104, 6], ["line", 150, 104, 106, 68, 6], ["line", 128, 86, 128, 132, 3]],
+      a: { hip: [150, 100], t: -130, hand: [143, 38], foot: [188, 132] }, b: { hand: [131, 63] } }),
+    "Dumbbell Fly": X({ front: true, nofloor: true, cap: "Seen from above", props: [["rect", 58, 52, 118, 36]],
+      a: { hip: [150, 70], t: -90, hand: [112, 16], hand2: [112, 124], foot: [190, 62], foot2: [190, 78] },
+      b: { hand: [100, 62], hand2: [100, 78] } }),
+    "Floor Press": X({
+      a: { hip: [150, 124], t: -90, hand: [114, 80], foot: [184, 132] }, b: { hand: [118, 108] } }),
+    "One-Arm Dumbbell Row": X({ one: true, props: [["bench", 132, 214, 100]],
+      a: { hip: [100, 80], t: 105, hand: [138, 112], hand2: [140, 98], foot: [100, 132], foot2: [82, 132] }, b: { hand: [108, 84] } }),
+    "Chest-Supported Row": X({ props: [["line", 107, 102, 156, 53, 6], ["line", 131, 78, 131, 132, 3]],
+      a: { hip: [100, 95], t: 135, hand: [128, 112], foot: [62, 132] }, b: { hand: [116, 84] } }),
+    "Dumbbell Pullover": X({ db: "v", props: [["bench", 95, 186, 100]],
+      a: { hip: [150, 92], t: -90, hand: [112, 50], foot: [188, 132] }, b: { hand: [70, 98] } }),
+    "Reverse Fly": X({ front: true, cap: "Seen from the front, hinged forward",
+      a: { hip: [120, 78], t: 180, tl: 0.45, hand: [130, 106], hand2: [110, 106], foot: [130, 132], foot2: [110, 132] },
+      b: { hand: [170, 60], hand2: [70, 60] } }),
+    "Dumbbell Shrug": X({ front: true, cap: "Seen from the front",
+      a: { hip: [120, 70], t: 180, hand: [137, 78], hand2: [103, 78], foot: [128, 132], foot2: [112, 132], sh: 0 },
+      b: { hand: [137, 70], hand2: [103, 70], sh: 8 } }),
+    "Seated Overhead Press": X({ props: [["line", 82, 108, 132, 108, 6], ["line", 92, 108, 92, 58, 6], ["line", 90, 108, 90, 132, 3], ["line", 128, 108, 128, 132, 3]],
+      a: { hip: [100, 100], t: 180, hand: [108, 18], foot: [134, 132] }, b: { hand: [112, 58] } }),
+    "Lateral Raise": X({ front: true, cap: "Seen from the front",
+      a: { hip: [120, 70], t: 180, hand: [137, 76], hand2: [103, 76], foot: [128, 132], foot2: [112, 132] },
+      b: { hand: [176, 36], hand2: [64, 36] } }),
+    "Arnold Press": X({ cap: "Side view · turn palms as you press",
+      a: { hip: [120, 70], t: 180, hand: [138, 40], foot: [124, 132] }, b: { hand: [124, -8] } }),
+    "Biceps Curl": X({
+      a: { hip: [120, 70], t: 180, hand: [124, 76], foot: [124, 132] }, b: { hand: [134, 34] } }),
+    "Hammer Curl": X({ db: "h", cap: "Side view · neutral grip",
+      a: { hip: [120, 70], t: 180, hand: [124, 76], foot: [124, 132] }, b: { hand: [134, 34] } }),
+    "Overhead Triceps Extension": X({ db: "v",
+      a: { hip: [120, 70], t: 180, hand: [118, -10], foot: [124, 132] }, b: { hand: [108, 30] } }),
+    "Triceps Kickback": X({
+      a: { hip: [100, 74], t: 115, hand: [113, 89], foot: [108, 132] }, b: { hand: [93, 77] } }),
+    "Goblet Squat": X({ db: "v",
+      a: { hip: [120, 70], t: 180, hand: [130, 44], foot: [124, 132] }, b: { hip: [102, 102], t: 162, hand: [124, 70] } }),
+    "Romanian Deadlift": X({
+      a: { hip: [120, 70], t: 180, hand: [124, 76], foot: [124, 132] }, b: { hip: [98, 78], t: 110, hand: [136, 106] } }),
+    "Reverse Lunge": X({
+      a: { hip: [134, 70], t: 180, hand: [136, 76], foot: [136, 132], foot2: [128, 132] },
+      b: { hip: [116, 96], hand: [118, 102], foot2: [84, 132] } }),
+    "Bulgarian Split Squat": X({ props: [["bench", 44, 98, 100]],
+      a: { hip: [120, 72], t: 180, hand: [122, 78], foot: [140, 132], foot2: [86, 94], toe2: [76, 96] },
+      b: { hip: [118, 98], hand: [120, 104] } }),
+    "Hip Thrust": X({ props: [["bench", 50, 100, 100]],
+      a: { hip: [128, 94], t: -90, hand: [126, 88], foot: [150, 132] }, b: { hip: [122, 112], t: -108, hand: [120, 106] } }),
+    "Standing Calf Raise": X({ props: [["line", 100, 126, 152, 126, 6], ["line", 110, 126, 110, 132, 3], ["line", 142, 126, 142, 132, 3]],
+      a: { hip: [122, 64], t: 180, hand: [124, 70], foot: [126, 122], toe: [138, 122] },
+      b: { hip: [124, 50], hand: [126, 56], foot: [128, 108] } }),
+    "Russian Twist": X({ front: true, mid: true, cap: "Seen from the front",
+      a: { hip: [120, 112], t: 180, tl: 0.9, hand: [158, 92], hand2: [148, 94], foot: [146, 132], foot2: [94, 132] },
+      b: { hand: [92, 94], hand2: [82, 92] } }),
+    "Side Bend": X({ front: true, cap: "Seen from the front",
+      a: { hip: [120, 70], t: 180, hand: [139, 76], hand2: [112, 24], foot: [128, 132], foot2: [112, 132] },
+      b: { t: 168, hand: [148, 80], hand2: [120, 22] } }),
+    "Suitcase Carry": X({ one: true, walk: true, T: 1.6, hold: 0, cap: "Side view · walk tall",
+      a: { hip: [120, 73], t: 180, hand: [124, 79], foot: [140, 132], foot2: [102, 132] },
+      b: { foot: [102, 132], foot2: [140, 132] } })
+  };
+
+  function makeDb(parent, type, far) {
+    var g = se("g", { "class": "db" + (far ? " far-db" : "") }, parent);
+    if (type === "v") {
+      se("rect", { x: -1.5, y: -7, width: 3, height: 14 }, g);
+      se("rect", { x: -5, y: -10, width: 10, height: 4, rx: 1 }, g);
+      se("rect", { x: -5, y: 6, width: 10, height: 4, rx: 1 }, g);
+    } else if (type === "h") {
+      se("rect", { x: -7, y: -1.5, width: 14, height: 3 }, g);
+      se("rect", { x: -10, y: -5, width: 4, height: 10, rx: 1 }, g);
+      se("rect", { x: 6, y: -5, width: 4, height: 10, rx: 1 }, g);
+    } else {
+      se("circle", { "class": "plate", r: 6.5 }, g);
+      se("circle", { "class": "dot", r: 2 }, g);
+    }
+    return g;
+  }
+  function place(g, p, show) {
+    g.setAttribute("visibility", show ? "visible" : "hidden");
+    if (show) g.setAttribute("transform", "translate(" + p[0].toFixed(1) + " " + p[1].toFixed(1) + ")");
+  }
+
+  function build(host, name, ex) {
+    var svg = se("svg", { viewBox: "0 -16 240 160", role: "img", "aria-label": "Animated demonstration of " + name, preserveAspectRatio: "xMidYMid meet" });
+    if (!ex.nofloor) se("line", { x1: 8, y1: FL + 2, x2: 232, y2: FL + 2, "class": "floorline" }, svg);
+    (ex.props || []).forEach(function (p) {
+      if (p[0] === "bench") {
+        se("line", { x1: p[1], y1: p[3], x2: p[2], y2: p[3], "class": "prop" }, svg);
+        se("line", { x1: p[1] + 8, y1: p[3], x2: p[1] + 8, y2: FL, "class": "prop thin" }, svg);
+        se("line", { x1: p[2] - 8, y1: p[3], x2: p[2] - 8, y2: FL, "class": "prop thin" }, svg);
+      } else if (p[0] === "line") {
+        se("line", { x1: p[1], y1: p[2], x2: p[3], y2: p[4], "class": "prop", "stroke-width": p[5] || 4 }, svg);
+      } else if (p[0] === "rect") {
+        se("rect", { x: p[1], y: p[2], width: p[3], height: p[4], rx: 4, "class": "prop thin", fill: "none" }, svg);
+      }
+    });
+    var type = ex.db || "end";
+    var f = {};
+    f.legF = se("polyline", { "class": "limb far" }, svg);
+    f.armF = se("polyline", { "class": "limb far" }, svg);
+    f.torso = se("line", { "class": "torso" }, svg);
+    f.legN = se("polyline", { "class": "limb" }, svg);
+    f.armN = se("polyline", { "class": "limb" }, svg);
+    f.bar = se("line", { "class": "torso", "stroke-width": 5 }, svg);
+    f.head = se("circle", { "class": "head", r: 7 }, svg);
+    f.dbF = makeDb(svg, type, true);
+    f.dbN = makeDb(svg, type, false);
+    host.appendChild(svg);
+    var cap = document.createElement("div");
+    cap.className = "cap";
+    cap.textContent = ex.cap || (ex.front ? "Front view" : "Side view");
+    host.appendChild(cap);
+
+    f.draw = function (u, rise) {
+      var P = mix(ex.a, ex.b, u);
+      if (ex.walk) {
+        var lift = 9 * Math.sin(Math.PI * u);
+        if (rise) P.foot2 = [P.foot2[0], P.foot2[1] - lift]; else P.foot = [P.foot[0], P.foot[1] - lift];
+      }
+      var t = P.t * RAD, s = Math.sin(t), c = Math.cos(t), tl = P.tl || 1, sh = P.sh || 0, hip = P.hip;
+      var S = [hip[0] + LT * tl * s, hip[1] + LT * tl * c];
+      var head = [S[0] + 14 * s, S[1] + 14 * c];
+      f.head.setAttribute("cx", head[0].toFixed(1)); f.head.setAttribute("cy", head[1].toFixed(1));
+      f.torso.setAttribute("x1", hip[0].toFixed(1)); f.torso.setAttribute("y1", hip[1].toFixed(1));
+      f.torso.setAttribute("x2", S[0].toFixed(1)); f.torso.setAttribute("y2", S[1].toFixed(1));
+      var an, af, ln, lf;
+      if (ex.front) {
+        var p = [c, -s];
+        var S1 = [S[0] - SW * p[0], S[1] - SW * p[1] - sh], S2 = [S[0] + SW * p[0], S[1] + SW * p[1] - sh];
+        var H1 = [hip[0] - 7 * p[0], hip[1] - 7 * p[1]], H2 = [hip[0] + 7 * p[0], hip[1] + 7 * p[1]];
+        an = ik(S1, P.hand, LU, LF, 1); af = ik(S2, P.hand2, LU, LF, -1);
+        ln = ik(H1, P.foot, LTH, LSH, -1); lf = ik(H2, P.foot2, LTH, LSH, 1);
+        f.bar.setAttribute("x1", S1[0].toFixed(1)); f.bar.setAttribute("y1", S1[1].toFixed(1));
+        f.bar.setAttribute("x2", S2[0].toFixed(1)); f.bar.setAttribute("y2", S2[1].toFixed(1));
+        f.bar.setAttribute("visibility", "visible");
+        f.armN.setAttribute("points", pts([S1, an.j, an.end]));
+        f.armF.setAttribute("points", pts([S2, af.j, af.end]));
+        f.legN.setAttribute("points", pts([H1, ln.j, ln.end, [ln.end[0] + 6, ln.end[1]]]));
+        f.legF.setAttribute("points", pts([H2, lf.j, lf.end, [lf.end[0] - 6, lf.end[1]]]));
+        if (ex.mid) {
+          place(f.dbN, [(an.end[0] + af.end[0]) / 2, (an.end[1] + af.end[1]) / 2], true);
+          place(f.dbF, [0, 0], false);
+        } else {
+          place(f.dbN, an.end, true); place(f.dbF, af.end, true);
+        }
+      } else {
+        f.bar.setAttribute("visibility", "hidden");
+        an = ik(S, P.hand, LU, LF, 1);
+        f.armN.setAttribute("points", pts([S, an.j, an.end]));
+        place(f.dbN, an.end, true);
+        if (P.hand2) {
+          af = ik(S, P.hand2, LU, LF, 1);
+          f.armF.setAttribute("points", pts([S, af.j, af.end]));
+          f.armF.setAttribute("visibility", "visible");
+          place(f.dbF, [0, 0], false);
+        } else if (!ex.one) {
+          af = ik([S[0] - 3, S[1]], [P.hand[0] - 5, P.hand[1]], LU, LF, 1);
+          f.armF.setAttribute("points", pts([[S[0] - 3, S[1]], af.j, af.end]));
+          f.armF.setAttribute("visibility", "visible");
+          place(f.dbF, af.end, true);
+        } else {
+          f.armF.setAttribute("visibility", "hidden");
+          place(f.dbF, [0, 0], false);
+        }
+        var foot2 = P.foot2 || [P.foot[0] - 8, P.foot[1]];
+        ln = ik(hip, P.foot, LTH, LSH, -1);
+        lf = ik([hip[0] - 2, hip[1]], foot2, LTH, LSH, -1);
+        var toe = P.toe || [ln.end[0] + 10, ln.end[1]];
+        var toeF = P.toe2 || (P.toe ? [P.toe[0] + foot2[0] - P.foot[0], P.toe[1] + foot2[1] - P.foot[1]] : [lf.end[0] + 10, lf.end[1]]);
+        f.legN.setAttribute("points", pts([hip, ln.j, ln.end, toe]));
+        f.legF.setAttribute("points", pts([[hip[0] - 2, hip[1]], lf.j, lf.end, toeF]));
+      }
+    };
+    f.ex = ex;
+    return f;
+  }
+
+  function phase(now, ex) {
+    var T = (ex.T || 2.8) * 1000, hold = ex.hold === undefined ? 0.1 : ex.hold;
+    var p = (now % T) / T, tri = p < 0.5 ? p * 2 : 2 - p * 2;
+    var x = Math.min(1, Math.max(0, (tri - hold) / (1 - 2 * hold)));
+    return [x * x * (3 - 2 * x), p < 0.5];
+  }
+
+  var figs = [], vis = new Set();
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var playing = !reduce;
+  var io = ("IntersectionObserver" in window) ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) vis.add(e.target._f); else vis.delete(e.target._f); });
+  }, { rootMargin: "120px" }) : null;
+
+  Array.prototype.forEach.call(document.querySelectorAll(".fig"), function (host) {
+    var name = host.dataset.ex, ex = EX[name];
+    if (!ex) return;
+    var f = build(host, name, ex);
+    host._f = f;
+    f.draw(0, true);
+    figs.push(f);
+    if (io) io.observe(host); else vis.add(f);
+  });
+
+  function tick(now) {
+    if (playing) vis.forEach(function (f) { var ph = phase(now, f.ex); f.draw(ph[0], ph[1]); });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  var toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "chip toggle";
+  toggle.id = "animToggle";
+  function label() {
+    toggle.textContent = playing ? "Pause animations" : "Play animations";
+    toggle.setAttribute("aria-pressed", playing ? "true" : "false");
+  }
+  label();
+  toggle.addEventListener("click", function () {
+    playing = !playing;
+    label();
+    if (!playing) figs.forEach(function (f) { f.draw(0, true); });
+  });
+  document.getElementById("filters").appendChild(toggle);
+})();
+</script>
+
+</body></html>
